@@ -13,6 +13,8 @@ class DType:
     flt32 = 5
     flt64 = 6
 
+DELTA = 1e-6
+
 def broadcast(lhs: Tensor, rhs: Union[float, int, Tensor]) -> Tensor:
     if type(rhs) != Tensor: return Tensor(None, shape=lhs.shape, num=rhs)
     return rhs
@@ -42,6 +44,10 @@ class Tensor:
         PROG.driver.numpy(self.id, self.data) 
         return self.data
     def __add__(self, rhs: Tensor) -> Tensor:
+        if type(rhs) in [float, int]:
+            PROG.f(AddS(self, rhs, t := Tensor(None, self.shape)))
+            PROG.ba([Add(self.grad, t.grad, self.grad)])
+            return t
         rhs = broadcast(self, rhs)
         PROG.f(Add(self, rhs, t := Tensor(None, self.shape)))
         PROG.ba([
@@ -61,14 +67,45 @@ class Tensor:
         rhs = broadcast(self, rhs)
         PROG.f(Mul(self, rhs, t := Tensor(None, self.shape)))
         PROG.ba([
-            Cpy(rhs, self.grad),
-            Cpy(self, rhs.grad)
+            Add(rhs, self.grad, self.grad),
+            Add(self, rhs.grad, rhs.grad),
+        ])
+        return t
+    def __truediv__(self, rhs: float) -> Tensor:
+        rhs = broadcast(self, rhs)
+        PROG.f(Div(self, rhs, t := Tensor(None, self.shape)))
+        tmp = Tensor(None, self.shape, num=1, temp=True)
+        PROG.ba([
+            AddS(rhs, DELTA, rhs),
+            Div(tmp, self, tmp),
+            Mul(tmp, t.grad, tmp),
+            Add(tmp, self.grad, self.grad)
+        ])
+        return t
+    def __matmul__(self, rhs: Tensor) -> Tensor:
+        assert type(rhs) == Tensor, "Can only dot with another tensor"
+        if self.dim() == 1 and rhs.dim() == 1: assert self.shape[-1] == rhs.shape[-1], f"Cannot dot {self.shape} and {rhs.shape}"
+        elif self.dim() > 1 and rhs.dim() == 2: assert self.shape[-1] == rhs.shape[-2], f"Cannot dot {self.shape} and {rhs.shape}"
+        else: raise ArithmeticError(f"Cannot dot {self.shape} and {rhs.shape}")
+        targetShape = tuple(list(self.shape[:-1]) + [rhs.shape[-1]])
+        PROG.f(Dot(self, rhs, t := Tensor(None, targetShape)))
+        shape = rhs.shape
+        tmp = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]), num=1, temp=True)
+        shape = self.shape
+        PROG.ba([
+            Trans(rhs, tmp),
+            Dot(t.grad, tmp, tmp),
+            Add(self.grad, tmp, self.grad),
+            ReshapeTemp(shape[:-2] + (shape[-1], shape[-2])),
+            Trans(self, tmp),
+            Dot(tmp, t.grad, tmp),
+            Add(rhs.grad, tmp, rhs.grad)
         ])
         return t
     
-t = Tensor([1,3,3])
-d = Tensor([1,3,3])
-z = t * d
+t = Tensor(None, (1,2), num=1)
+d = Tensor(None, (2,1), num=1)
+z = t @ d
 PROG.compile()
 PROG.forward()
 PROG.backward(z)

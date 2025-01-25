@@ -20,4 +20,10 @@ class NumpyDriver(Singleton, Driver):
     def add(self, lhs, rhs, out) -> None: self._mem[out.id][:] = np.add(self._mem[lhs.id], self._mem[rhs.id])
     def sub(self, lhs, rhs, out) -> None: self._mem[out.id][:] = np.subtract(self._mem[lhs.id], self._mem[rhs.id])
     def mul(self, lhs, rhs, out) -> None: self._mem[out.id][:] = np.multiply(self._mem[lhs.id], self._mem[rhs.id])
+    def dot(self, lhs, rhs, out) -> None: self._mem[out.id][:] = np.dot(self._mem[lhs.id], self._mem[rhs.id])
+    def div(self, lhs, rhs, out) -> None: self._mem[out.id][:] = np.divide(self._mem[lhs.id], self._mem[rhs.id])
     def cpy(self, src, out) -> None: self._mem[out.id][:] = self._mem[src.id]
+    def trans(self, src, out) -> None: self._mem[out.id][:] = np.transpose(self._mem[src.id])
+    def reshapeTemp(self, shape) -> None: self._mem[0] = np.full(shape, 0)
+    def pow(self, src, p, out) -> None: self._mem[out.id][:] = np.power(self._mem[src.id], p)
+    def adds(self, src, scalar, out) -> None: self._mem[out.id][:] = np.add(self._mem[src.id][:], scalar)

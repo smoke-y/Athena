@@ -5,8 +5,6 @@ class Program:
     def __init__(self) -> None:
         self.forwardSet, self.backwardSet, self.driver  = [], [], NumpyDriver()
     def f(self, op) -> None: self.forwardSet.append(op)
-    def fa(self, ops: list) -> None: self.forwardSet = self.forwardSet + ops
-    def b(self, op) -> None: self.backwardSet.append(op)
     def ba(self, ops: list) -> None: self.backwardSet = self.backwardSet + ops
     def compile(self) -> None: self.driver.compile()
     def forward(self) -> None:
