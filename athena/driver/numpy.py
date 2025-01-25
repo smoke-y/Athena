@@ -13,7 +13,7 @@ class NumpyDriver(Singleton, Driver):
         self._mem.append(np.full(shape, num))
         return len(self._mem) - 1
     def allocateTemp(self, num: float, shape: tuple) -> int:
-        self._mem[0] = np.full(shape, num)
+        self._mem[0] = np.full(shape, num if num is not None else 0.0)
         return 0
     def numpy(self, id: int, out: np.ndarray) -> None: out[:] = self._mem[id]
     def fill(self, id: int, value: float) -> None: self._mem[id].fill(value)
@@ -22,8 +22,8 @@ class NumpyDriver(Singleton, Driver):
     def mul(self, lhs, rhs, out) -> None: self._mem[out.id][:] = np.multiply(self._mem[lhs.id], self._mem[rhs.id])
     def dot(self, lhs, rhs, out) -> None: self._mem[out.id][:] = np.dot(self._mem[lhs.id], self._mem[rhs.id])
     def div(self, lhs, rhs, out) -> None: self._mem[out.id][:] = np.divide(self._mem[lhs.id], self._mem[rhs.id])
-    def cpy(self, src, out) -> None: self._mem[out.id][:] = self._mem[src.id]
     def trans(self, src, out) -> None: self._mem[out.id][:] = np.transpose(self._mem[src.id])
-    def reshapeTemp(self, shape) -> None: self._mem[0] = np.full(shape, 0)
+    def reTemp(self, value, shape) -> None: self._mem[0] = np.full(shape, value if value is not None else 0)
     def pow(self, src, p, out) -> None: self._mem[out.id][:] = np.power(self._mem[src.id], p)
     def adds(self, src, scalar, out) -> None: self._mem[out.id][:] = np.add(self._mem[src.id][:], scalar)
+    def muls(self, src, scalar, out) -> None: self._mem[out.id][:] = np.multiply(self._mem[src.id][:], scalar)

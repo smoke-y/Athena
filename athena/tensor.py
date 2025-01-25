@@ -1,6 +1,6 @@
 from __future__ import annotations
-from program import *
 from typing import Union
+from program import *
 from ops import *
 import numpy as np
 
@@ -29,8 +29,7 @@ class Tensor:
             self.id = PROG.driver.allocateObj(data)
         else:
             assert shape is not None, "shape and data can't be None"
-            num = 0 if num is None else num
-            self.id = PROG.driver.allocateNum(num, shape) if temp == False else PROG.driver.allocateTemp(num, shape)
+            self.id = PROG.driver.allocateNum(0 if num is None else num, shape) if temp == False else PROG.driver.allocateTemp(num, shape)
             self.shape = shape
         if requireGrad: self.grad = Tensor(None, shape=self.shape, dtype=dtype, requireGrad=False)
         else: self.grad = None
@@ -71,7 +70,7 @@ class Tensor:
             Add(self, rhs.grad, rhs.grad),
         ])
         return t
-    def __truediv__(self, rhs: float) -> Tensor:
+    def __truediv__(self, rhs: Union[float, int]) -> Tensor:
         rhs = broadcast(self, rhs)
         PROG.f(Div(self, rhs, t := Tensor(None, self.shape)))
         tmp = Tensor(None, self.shape, num=1, temp=True)
@@ -90,22 +89,30 @@ class Tensor:
         targetShape = tuple(list(self.shape[:-1]) + [rhs.shape[-1]])
         PROG.f(Dot(self, rhs, t := Tensor(None, targetShape)))
         shape = rhs.shape
-        tmp = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]), num=1, temp=True)
+        tmp = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]), temp=True)
         shape = self.shape
         PROG.ba([
             Trans(rhs, tmp),
             Dot(t.grad, tmp, tmp),
             Add(self.grad, tmp, self.grad),
-            ReshapeTemp(shape[:-2] + (shape[-1], shape[-2])),
+            ReTemp(None, shape[:-2] + (shape[-1], shape[-2])),
             Trans(self, tmp),
             Dot(tmp, t.grad, tmp),
             Add(rhs.grad, tmp, rhs.grad)
         ])
         return t
+    def __pow__(self, rhs: Union[float, int]) -> Tensor:
+        PROG.f(Pow(self, rhs, t := Tensor(None, self.shape)))
+        PROG.ba([
+            Pow(self, rhs-1, tmp := Tensor(None, self.shape, temp=True)),
+            MulS(tmp, rhs, tmp),
+            Mul(tmp, t.grad, tmp),
+            Add(tmp, self.grad, self.grad)
+        ])
+        return t
     
 t = Tensor(None, (1,2), num=1)
-d = Tensor(None, (2,1), num=1)
-z = t @ d
+z = t ** 3
 PROG.compile()
 PROG.forward()
 PROG.backward(z)

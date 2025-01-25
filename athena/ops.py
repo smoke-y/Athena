@@ -22,8 +22,6 @@ class Div(BinOp):
 class Dot(BinOp):
     def forward(self) -> None: PROG.driver.dot(self.lhs, self.rhs, self.out)
 
-class Cpy(UnOp):
-    def forward(self) -> None: PROG.driver.cpy(self.src, self.out)
 class Pow(UnOp):
     def __init__(self, src, pow, out) -> None:
         super().__init__(src, out)
@@ -34,9 +32,17 @@ class AddS(UnOp):
         super().__init__(src, out)
         self.scalar = scalar
     def forward(self) -> None: PROG.driver.adds(self.src, self.scalar, self.out)
+class MulS(UnOp):
+    def __init__(self, src, scalar, out) -> None:
+        super().__init__(src, out)
+        self.scalar = scalar
+    def forward(self) -> None: PROG.driver.muls(self.src, self.scalar, self.out)
+class Pow(UnOp):
+    def __init__(self, src, pow, out) -> None:
+        super().__init__(src, out)
+        self.pow = pow
+    def forward(self) -> None: PROG.driver.pow(self.src, self.pow, self.out)
 class Trans(UnOp):
     def forward(self) -> None: PROG.driver.trans(self.src, self.out)
-class ReshapeTemp(UnOp):
-    def __init__(self, shape) -> None:
-        super().__init__(None, shape)
-    def forward(self) -> None: PROG.driver.reshapeTemp(self.out)
+class ReTemp(UnOp):
+    def forward(self) -> None: PROG.driver.reTemp(self.src, self.out)
