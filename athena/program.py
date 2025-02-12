@@ -6,10 +6,17 @@ class Program:
         self.forwardSet, self.backwardSet, self.driver  = [], [], NumpyDriver()
     def f(self, op) -> None: self.forwardSet.append(op)
     def fa(self, ops: list) -> None: self.forwardSet = self.forwardSet + ops
-    def ba(self, ops: list) -> None: self.backwardSet = self.backwardSet + ops
-    def compile(self) -> None: self.driver.compile()
+    def ba(self, ops: list) -> None: self.backwardSet.append(ops)
+    def compile(self) -> None:
+        self.driver.compile()
+        self.backwardSet = self.backwardSet[::-1]
+        backwardPass = []
+        for i in self.backwardSet: backwardPass.extend(i)
+        self.backwardSet = backwardPass
     def printForward(self) -> None:
         for i in self.forwardSet: print(i)
+    def printBackward(self) -> None:
+        for i in self.backwardSet: print(i)
     def forward(self) -> None:
         for i in self.forwardSet: i.forward()
     def backward(self, z) -> None:

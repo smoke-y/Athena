@@ -13,3 +13,5 @@ def sigmoid(x: Tensor) -> Tensor:
         Mul(tmp, t.grad, x.grad),
     ])
     return t
+
+def mse(target: Tensor, x: Tensor) -> Tensor: return ((x - target) ** 2).sum() / target.numel()

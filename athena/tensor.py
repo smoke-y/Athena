@@ -35,7 +35,7 @@ class Tensor:
             assert shape is not None, "shape and data can't be None"
             PROG.driver.allocateNum(0 if num is None else num, shape, sshape, self)
             self.shape = shape
-        if requireGrad: self.grad = Tensor(None, shape=self.shape, dtype=dtype, requireGrad=False)
+        if requireGrad: self.grad = Tensor(None, shape=self.shape, dtype=dtype, requireGrad=False, sshape=sshape)
         else: self.grad = None
         #TODO - type casting
         self.data = None
@@ -50,8 +50,12 @@ class Tensor:
         return self.data
     def sum(self) -> Tensor:
         PROG.f(Sum(self, t := Tensor(None, tuple(list(self.shape[:-2])+[1]), requireGrad=self.grad != None)))
-        PROG.ba([AddT(t, self)])
+        PROG.ba([AddT(t.grad, self.grad)])
         return t
+    def numel(self) -> Tensor:
+        elem = 1
+        for i in self.shape: elem *= i
+        return elem
     def __add__(self, rhs: Tensor) -> Tensor:
         if type(rhs) in [float, int]:
             PROG.f(AddS(self, rhs, t := Tensor(None, self.shape)))
@@ -86,7 +90,7 @@ class Tensor:
         tmp = Tensor(None, self.shape, num=1)
         PROG.ba([
             AddS(rhs, DELTA, rhs),
-            Div(tmp, self, tmp),
+            Div(tmp, rhs, tmp),
             Mul(tmp, t.grad, tmp),
             Add(tmp, self.grad, self.grad)
         ])
