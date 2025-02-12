@@ -1,5 +1,5 @@
 from __future__ import annotations
-from program import *
+from .program import *
 
 class BinOp:
     def __init__(self, lhs, rhs, out) -> None: self.lhs, self.rhs, self.out = lhs, rhs, out
@@ -48,5 +48,7 @@ class Sum(UnOp):
     def forward(self) -> None: PROG.driver.sum(self.src, self.out)
 class Trans(UnOp):
     def forward(self) -> None: PROG.driver.trans(self.src, self.out)
-class ReTemp(UnOp):
-    def forward(self) -> None: PROG.driver.reTemp(self.src, self.out)
+class Exp(UnOp):
+    def forward(self) -> None: PROG.driver.exp(self.src, self.out)
+class Neg(UnOp):
+    def forward(self) -> None: PROG.driver.neg(self.src, self.out)

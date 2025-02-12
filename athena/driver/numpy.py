@@ -1,4 +1,4 @@
-from driver.driver import *
+from .driver import *
 import numpy as np
 
 class NumpyDriver(Singleton, Driver):
@@ -34,10 +34,11 @@ class NumpyDriver(Singleton, Driver):
     def dot(self, lhs, rhs, out) -> None: self._mem[out.id] = np.dot(self._mem[lhs.id], self._mem[rhs.id])
     def div(self, lhs, rhs, out) -> None: self._mem[out.id] = np.divide(self._mem[lhs.id], self._mem[rhs.id])
     def trans(self, src, out) -> None: self._mem[out.id] = np.transpose(self._mem[src.id])
-    def reTemp(self, value, shape) -> None: self._mem[0] = np.full(shape, value if value is not None else 0)
     def addt(self, src, out) -> None: self._mem[out.id] = np.add(self._mem[out.id], self._mem[src.id])
     def sum(self, src, out) -> None: self._mem[out.id] = np.sum(self._mem[src.id])
     def pow(self, src, p, out) -> None: self._mem[out.id] = np.power(self._mem[src.id], p)
     def adds(self, src, scalar, out) -> None: self._mem[out.id] = np.add(self._mem[src.id], scalar)
     def muls(self, src, scalar, out) -> None: self._mem[out.id] = np.multiply(self._mem[src.id], scalar)
+    def exp(self, src, out) -> None: self._mem[out.id] = np.exp(self._mem[src.id])
+    def neg(self, src, out) -> None: self._mem[out.id] = np.negative(self._mem[src.id])
     def fpassComplete(self) -> None: self._mem = self._mem[:self.sshapeLen]
