@@ -21,15 +21,16 @@ def broadcast(lhs: Tensor, rhs: Union[float, int, Tensor]) -> Tensor:
     #TODO - broadcast when rhs is also a tensor
 
 class Tensor:
-    def __init__(self, data: Union[np.ndarray, list, tuple], shape: tuple = None, num: float = None, dtype: DType = DType.flt32, requireGrad: bool = True, temp: bool = False) -> None:
+    def __init__(self, data: Union[np.ndarray, list, tuple], shape: tuple = None, num: float = None, dtype: DType = DType.flt32, requireGrad: bool = True, sshape: bool = False) -> None:
+        self.id = 0
         if data:
             if type(data) != np.ndarray: data = np.array(data)
             if shape is not None: data = data.reshape(shape)
             self.shape = data.shape
-            self.id = PROG.driver.allocateObj(data)
+            PROG.driver.allocateObj(data, sshape, self)
         else:
             assert shape is not None, "shape and data can't be None"
-            self.id = PROG.driver.allocateNum(0 if num is None else num, shape) if temp == False else PROG.driver.allocateTemp(num, shape)
+            PROG.driver.allocateNum(0 if num is None else num, shape, sshape, self)
             self.shape = shape
         if requireGrad: self.grad = Tensor(None, shape=self.shape, dtype=dtype, requireGrad=False)
         else: self.grad = None
@@ -42,6 +43,10 @@ class Tensor:
         if self.data is None: self.data = np.zeros(self.shape)
         PROG.driver.numpy(self.id, self.data) 
         return self.data
+    def sum(self) -> Tensor:
+        PROG.f(Sum(self, t := Tensor(None, tuple(list(self.shape[:-2])+[1]), requireGrad=self.grad != None)))
+        PROG.ba([AddT(t, self)])
+        return t
     def __add__(self, rhs: Tensor) -> Tensor:
         if type(rhs) in [float, int]:
             PROG.f(AddS(self, rhs, t := Tensor(None, self.shape)))
@@ -110,11 +115,3 @@ class Tensor:
             Add(tmp, self.grad, self.grad)
         ])
         return t
-    
-t = Tensor(None, (1,2), num=1)
-z = t ** 3
-PROG.compile()
-PROG.forward()
-PROG.backward(z)
-print(z.numpy())
-print(t.grad.numpy())

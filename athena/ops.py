@@ -42,6 +42,10 @@ class Pow(UnOp):
         super().__init__(src, out)
         self.pow = pow
     def forward(self) -> None: PROG.driver.pow(self.src, self.pow, self.out)
+class AddT(UnOp):
+    def forward(self) -> None: PROG.driver.addt(self.src, self.out)
+class Sum(UnOp):
+    def forward(self) -> None: PROG.driver.sum(self.src, self.out)
 class Trans(UnOp):
     def forward(self) -> None: PROG.driver.trans(self.src, self.out)
 class ReTemp(UnOp):
