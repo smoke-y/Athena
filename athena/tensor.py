@@ -124,3 +124,7 @@ class Tensor:
             Add(tmp, self.grad, self.grad)
         ])
         return t
+    def load(self, data: Union[np.ndarray, list, tuple]) -> None:
+        if type(data) != np.ndarray: data = np.array(data)
+        data = data.reshape(self.shape)
+        PROG.driver.load(self.id, data)

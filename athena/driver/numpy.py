@@ -22,6 +22,7 @@ class NumpyDriver(Singleton, Driver):
             else: self._mem.append(np.full(obj[2], obj[1]))
             obj[0].id = i + x
         del self.static, self.temp
+    def load(self, id: int, data: np.ndarray) -> None: self._mem[id][:] = data
     def allocateObj(self, obj: np.ndarray, sshape: bool, tens) -> None:
         self.static.append([tens, obj]) if sshape else self.temp.append([tens, obj])
     def allocateNum(self, num: float, shape: tuple, sshape: bool, tens) -> None:
