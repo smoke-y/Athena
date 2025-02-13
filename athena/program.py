@@ -3,10 +3,11 @@ from .driver.numpy import NumpyDriver
 
 class Program:
     def __init__(self) -> None:
-        self.forwardSet, self.backwardSet, self.driver  = [], [], NumpyDriver()
+        self.forwardSet, self.backwardSet, self.optimizerSet, self.driver  = [], [], [], NumpyDriver()
     def f(self, op) -> None: self.forwardSet.append(op)
     def fa(self, ops: list) -> None: self.forwardSet = self.forwardSet + ops
     def ba(self, ops: list) -> None: self.backwardSet.append(ops)
+    def oa(self, ops: list) -> None: self.optimizerSet = self.optimizerSet + ops
     def compile(self) -> None:
         self.driver.compile()
         self.backwardSet = self.backwardSet[::-1]
