@@ -10,12 +10,43 @@
         };                                                       \
     };                                                           \
 
+#define BIN_SCAL_TEMPLATE(OP, NAME)                              \
+    __global__ void NAME(const float *a, float *b, const float scalar, const unsigned X, const unsigned Y){                                                 \
+        const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;  \
+        const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;  \
+        if(x < X && y < Y){                                      \
+            const unsigned id = y*X + x;                         \
+            b[id] = a[id] OP scalar;                             \
+        };                                                       \
+    };                                                           \
+
 BIN_TEMPLATE(+, add)
 BIN_TEMPLATE(-, sub)
 BIN_TEMPLATE(*, mul)
 BIN_TEMPLATE(/, div)
 
-void printInfo(char *buff){
+BIN_SCAL_TEMPLATE(+, adds)
+BIN_SCAL_TEMPLATE(*, muls)
+
+__global__ void addt(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
+    const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
+    const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
+    if(x < X && y < Y){
+        const unsigned id = y*X + x;
+        b[id] += a[0];
+    }
+}
+
+__global__ void pow(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
+    const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
+    const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
+    if(x < X && y < Y){
+        const unsigned id = y*X + x;
+        b[id] = __powf(a[id], pow);
+    }
+}
+
+void getInfo(char *buff){
     cudaDeviceProp prop;
     cudaGetDeviceProperties(&prop, 0);
     sprintf(buff, "Device name: %s\nMem clock rate(KHz): %d\nMem bus width: %d\nPeak mem bandwidth(GB/s): %f\n", prop.name, prop.memoryClockRate, prop.memoryBusWidth, 2.0*prop.memoryClockRate*(prop.memoryBusWidth/8)/1.0e6);
@@ -35,7 +66,7 @@ void printMatrix(float *a, int x, int y){
 };
 int main(){
     char buff[100];
-    printInfo(buff);
+    getInfo(buff);
     printf("%s\n", buff);
     const unsigned X = 8;
     const unsigned Y = 8;

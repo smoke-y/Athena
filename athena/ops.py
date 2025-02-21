@@ -37,11 +37,6 @@ class MulS(UnOp):
         super().__init__(src, out)
         self.scalar = scalar
     def forward(self) -> None: PROG.driver.muls(self.src, self.scalar, self.out)
-class Pow(UnOp):
-    def __init__(self, src, pow, out) -> None:
-        super().__init__(src, out)
-        self.pow = pow
-    def forward(self) -> None: PROG.driver.pow(self.src, self.pow, self.out)
 class AddT(UnOp):
     def forward(self) -> None: PROG.driver.addt(self.src, self.out)
 class Sum(UnOp):

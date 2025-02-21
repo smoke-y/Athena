@@ -13,7 +13,7 @@ __global__ void mul_slow(const float *a, const float *b, float *c, const unsigne
 
 #define TILE_WIDTH 32
 
-__global__ void mul_fast(const float *a, const float *b, float *c, const unsigned int X1, const unsigned int X2, const unsigned int Y1){
+__global__ void mul(const float *a, const float *b, float *c, const unsigned int X1, const unsigned int X2, const unsigned int Y1){
     const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
     const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
 
@@ -79,7 +79,7 @@ int main(){
     printMatrix((float*)ch, X, Y);
 
     printf("[fast]%f @ %f =\n", xVal, yVal);
-    mul_slow<<<gridSize, blockSize>>>(a, b, c, X, Y, Y);
+    mul<<<gridSize, blockSize>>>(a, b, c, X, Y, Y);
     cudaMemcpy(ch, c, size, cudaMemcpyDeviceToHost);
     printMatrix((float*)ch, X, Y);
 };
