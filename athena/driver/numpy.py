@@ -2,16 +2,10 @@ from .driver import *
 import numpy as np
 
 class NumpyDriver(Singleton, Driver):
-    def __init__(self) -> None:
-        super().__init__()
-        self._mem = []
-        self.static = []
-        self.temp = []
-        self.sshapeLen = 0
     def compile(self) -> None:
         for i in range(len(self.static)):
             obj = self.static[i]
-            if len(obj) == 2: self._mem.append(np.array(obj[1]))
+            if len(obj) == 2: self._mem.append(obj[1])
             else: self._mem.append(np.full(obj[2], obj[1]))
             obj[0].id = i
         x = len(self.static)
@@ -23,10 +17,6 @@ class NumpyDriver(Singleton, Driver):
             obj[0].id = i + x
         del self.static, self.temp
     def load(self, id: int, data: np.ndarray) -> None: self._mem[id][:] = data
-    def allocateObj(self, obj: np.ndarray, sshape: bool, tens) -> None:
-        self.static.append([tens, obj]) if sshape else self.temp.append([tens, obj])
-    def allocateNum(self, num: float, shape: tuple, sshape: bool, tens) -> None:
-        self.static.append([tens, num, shape]) if sshape else self.temp.append([tens, num, shape])
     def numpy(self, id: int, out: np.ndarray) -> None: out[:] = self._mem[id]
     def fill(self, id: int, value: float) -> None: self._mem[id].fill(value)
     def add(self, lhs, rhs, out) -> None: self._mem[out.id] = np.add(self._mem[lhs.id], self._mem[rhs.id])

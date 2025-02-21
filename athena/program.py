@@ -3,7 +3,7 @@ from .driver.numpy import NumpyDriver
 
 class Program:
     def __init__(self) -> None:
-        self.forwardSet, self.backwardSet, self.optimizerSet, self.driver  = [], [], [], NumpyDriver()
+        self.forwardSet, self.backwardSet, self.optimizerSet, self.driver  = [], [], [], None
     def f(self, op) -> None: self.forwardSet.append(op)
     def fa(self, ops: list) -> None: self.forwardSet = self.forwardSet + ops
     def ba(self, ops: list) -> None: self.backwardSet.append(ops)

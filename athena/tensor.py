@@ -4,15 +4,6 @@ from .program import *
 from .ops import *
 import numpy as np
 
-class DType:
-    int8  = 0
-    int16 = 1
-    int32 = 2
-    int64 = 3
-    flt16 = 4
-    flt32 = 5
-    flt64 = 6
-
 DELTA = 1e-6
 
 def broadcast(lhs: Tensor, rhs: Union[float, int, Tensor]) -> Tensor:
@@ -24,10 +15,10 @@ def broadcast(lhs: Tensor, rhs: Union[float, int, Tensor]) -> Tensor:
     #TODO - broadcast when rhs is also a tensor
 
 class Tensor:
-    def __init__(self, data: Union[np.ndarray, list, tuple], shape: tuple = None, num: float = None, dtype: DType = DType.flt32, requireGrad: bool = True, sshape: bool = False) -> None:
+    def __init__(self, data: Union[np.ndarray, list, tuple], shape: tuple = None, num: float = None, requireGrad: bool = True, sshape: bool = False) -> None:
         self.id = 0
         if data is not None:
-            if type(data) != np.ndarray: data = np.array(data)
+            data = np.array(data, dtype=np.float32)
             if shape is not None: data = data.reshape(shape)
             self.shape = data.shape
             PROG.driver.allocateObj(data, sshape, self)
@@ -35,7 +26,7 @@ class Tensor:
             assert shape is not None, "shape and data can't be None"
             PROG.driver.allocateNum(0 if num is None else num, shape, sshape, self)
             self.shape = shape
-        if requireGrad: self.grad = Tensor(None, shape=self.shape, dtype=dtype, requireGrad=False, sshape=sshape)
+        if requireGrad: self.grad = Tensor(None, shape=self.shape, requireGrad=False, sshape=sshape)
         else: self.grad = None
         #TODO - type casting
         self.data = None

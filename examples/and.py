@@ -12,6 +12,8 @@ data = [
 
 from athena import *
 
+PROG.driver = NumpyDriver()
+
 inp = Tensor(data=None, shape = (1,2))
 tar = Tensor(data=None, shape = (1,1))
 
