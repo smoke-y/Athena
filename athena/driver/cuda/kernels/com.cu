@@ -1,22 +1,30 @@
-#include "basic.cu"
+#include <stdio.h>
 
-#define BIN_TEMPLATE(OP, NAME)                              \
-    __global__ void NAME(const float *a, const float *b, float *c, const u32 X, const u32 Y){                                                 \
-        const u32 x = threadIdx.x + blockIdx.x*blockDim.x;  \
-        const u32 y = threadIdx.y + blockIdx.y*blockDim.y;  \
-        if(x < X && y < Y){                                 \
-            const u32 id = y*X + x;                         \
-            c[id] = a[id] OP b[id];                         \
-        };                                                  \
-    };                                                      \
+#define BIN_TEMPLATE(OP, NAME)                                   \
+    __global__ void NAME(const float *a, const float *b, float *c, const unsigned X, const unsigned Y){                                                 \
+        const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;  \
+        const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;  \
+        if(x < X && y < Y){                                      \
+            const unsigned id = y*X + x;                         \
+            c[id] = a[id] OP b[id];                              \
+        };                                                       \
+    };                                                           \
 
 BIN_TEMPLATE(+, add)
 BIN_TEMPLATE(-, sub)
 BIN_TEMPLATE(*, mul)
 BIN_TEMPLATE(/, div)
 
+void printInfo(char *buff){
+    cudaDeviceProp prop;
+    cudaGetDeviceProperties(&prop, 0);
+    sprintf(buff, "Device name: %s\nMem clock rate(KHz): %d\nMem bus width: %d\nPeak mem bandwidth(GB/s): %f\n", prop.name, prop.memoryClockRate, prop.memoryBusWidth, 2.0*prop.memoryClockRate*(prop.memoryBusWidth/8)/1.0e6);
+}
 
 #if(TEST)
+
+#include <math.h>
+
 void printMatrix(float *a, int x, int y){
     for(int i=0; i<y; i++){
         for(int j=0; j<x; j++){
@@ -26,8 +34,11 @@ void printMatrix(float *a, int x, int y){
     };
 };
 int main(){
-    const u32 X = 8;
-    const u32 Y = 8;
+    char buff[100];
+    printInfo(buff);
+    printf("%s\n", buff);
+    const unsigned X = 8;
+    const unsigned Y = 8;
     const float xVal = 10.0;
     const float yVal = 5.0;
     float ah[Y][X] = {0.0};
@@ -41,7 +52,7 @@ int main(){
     };
 
     float *a, *b, *c;
-    u64 size = X*Y*sizeof(float);
+    unsigned long size = X*Y*sizeof(float);
     cudaMalloc(&a, size);
     cudaMalloc(&b, size);
     cudaMalloc(&c, size);
