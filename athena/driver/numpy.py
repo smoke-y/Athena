@@ -32,4 +32,4 @@ class NumpyDriver(Singleton, Driver):
     def muls(self, src, scalar, out) -> None: self._mem[out.id] = np.multiply(self._mem[src.id], scalar)
     def exp(self, src, out) -> None: self._mem[out.id] = np.exp(self._mem[src.id])
     def neg(self, src, out) -> None: self._mem[out.id] = np.negative(self._mem[src.id])
-    def fpassComplete(self) -> None: self._mem = self._mem[:self.sshapeLen]
+    def passComplete(self) -> None: pass

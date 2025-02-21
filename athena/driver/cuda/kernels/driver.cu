@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 EXPORT float* allocObj(float* arr, unsigned count){
     float *mem;
     const unsigned size = count*sizeof(float);
@@ -18,5 +20,10 @@ EXPORT void fill(float *dst, unsigned count, float num){
     float *hostMem = (float*)malloc(sizeof(float)*count);
     for(int i=0; i<count; i++) hostMem[i] = num;
     cudaMemcpy(dst, hostMem, count*sizeof(float), cudaMemcpyHostToDevice);
+}
+EXPORT float* allocChunk(unsigned size){
+    float *mem;
+    cudaMalloc(&mem, size);
+    return mem;
 }
 EXPORT void freeMem(void *ptr){cudaFree(ptr);};

@@ -22,4 +22,4 @@ class Driver:
     def fill(self, id: int, out: np.ndarray) -> None: raise NotImplementedError(f"fill not implemented for {self.__class__.__name__}")
     def load(self, id: int, data: np.ndarray) -> None: raise NotImplementedError(f"load not implemented for {self.__class__.__name__}")
     def compile(self) -> None: raise NotImplementedError(f"compile not implemented for {self.__class__.__name__}")
-    def fpassComplete(self) -> None: raise NotImplementedError(f"fpassComplete not implemented for {self.__class__.__name__}")
+    def passComplete(self) -> None: raise NotImplementedError(f"passComplete not implemented for {self.__class__.__name__}")

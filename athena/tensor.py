@@ -28,7 +28,7 @@ class Tensor:
             self.shape = shape
         if requireGrad: self.grad = Tensor(None, shape=self.shape, requireGrad=False, sshape=sshape)
         else: self.grad = None
-        #TODO - type casting
+        self.sshape = sshape
         self.data = None
     @staticmethod
     def rand(shape: tuple, sshape: bool = False) -> Tensor: return Tensor(data=np.random.randn(*shape), sshape=sshape)
@@ -36,7 +36,7 @@ class Tensor:
     def _fill(self, value: float) -> None: PROG.driver.fill(self.id, value)
     def dim(self) -> int: return len(self.shape)
     def numpy(self) -> np.ndarray:
-        if self.data is None: self.data = np.zeros(self.shape)
+        if self.data is None: self.data = np.zeros(self.shape, dtype=np.float32)
         PROG.driver.numpy(self.id, self.data) 
         return self.data
     def sum(self) -> Tensor:
@@ -94,9 +94,9 @@ class Tensor:
         targetShape = tuple(list(self.shape[:-1]) + [rhs.shape[-1]])
         PROG.f(Dot(self, rhs, t := Tensor(None, targetShape)))
         shape = rhs.shape
-        tmp = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]))
+        tmp = Tensor(None, shape=shape[:-2] + [shape[-1], shape[-2]])
         shape = self.shape
-        tmp2 = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]))
+        tmp2 = Tensor(None, shape=shape[:-2] + [shape[-1], shape[-2]])
         PROG.ba([
             Trans(rhs, tmp),
             Dot(t.grad, tmp, tmp),

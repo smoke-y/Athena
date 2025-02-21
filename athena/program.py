@@ -23,6 +23,6 @@ class Program:
     def backward(self, z) -> None:
         z.grad._fill(1)
         for i in self.backwardSet: i.forward()
-    def fpassComplete(self) -> None: self.driver.fpassComplete()
+    def passComplete(self) -> None: self.driver.passComplete()
 
 PROG: Program = Program()

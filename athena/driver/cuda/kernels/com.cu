@@ -20,15 +20,21 @@
         };                                                       \
     };                                                           \
 
-BIN_TEMPLATE(+, add)
-BIN_TEMPLATE(-, sub)
-BIN_TEMPLATE(*, mul)
-BIN_TEMPLATE(/, div)
+BIN_TEMPLATE(+, addKernel)
+BIN_TEMPLATE(-, subKernel)
+BIN_TEMPLATE(*, mulKernel)
+BIN_TEMPLATE(/, divKernel)
 
-BIN_SCAL_TEMPLATE(+, adds)
-BIN_SCAL_TEMPLATE(*, muls)
+BIN_SCAL_TEMPLATE(+, addsKernel)
+BIN_SCAL_TEMPLATE(*, mulsKernel)
 
-__global__ void addt(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
+EXPORT void add(const float *a, const float *b, float *c, const unsigned X, const unsigned Y){
+    dim3 gridSize(2, 2);
+    dim3 blockSize(max(X/2,1), max(Y/2,1));
+    addKernel<<<gridSize, blockSize>>>(a,b,c,X,Y);
+};
+
+__global__ void addtKernel(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
     const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
     const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
     if(x < X && y < Y){
@@ -37,7 +43,7 @@ __global__ void addt(const float *a, float *b, const float pow, const unsigned X
     }
 }
 
-__global__ void pow(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
+__global__ void powKernel(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
     const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
     const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
     if(x < X && y < Y){

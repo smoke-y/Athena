@@ -27,6 +27,7 @@ x2 = sigmoid(x1 @ w2 + b2)
 
 loss = mse(tar, x2)
 PROG.compile()
+PROG.printForward()
 
 optimizer = SGD([w1, w2, b1, b2], lr=0.01)
 
@@ -38,3 +39,4 @@ for epoch in range(20):
         PROG.backward(x2)
         print(loss.numpy(), x2.numpy())
         optimizer.step()
+        PROG.passComplete()
