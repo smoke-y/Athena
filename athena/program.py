@@ -18,6 +18,8 @@ class Program:
         for i in self.forwardSet: print(i)
     def printBackward(self) -> None:
         for i in self.backwardSet: print(i)
+    def printOptimize(self) -> None:
+        for i in self.optimizerSet: print(i)
     def forward(self) -> None:
         for i in self.forwardSet: i.forward()
     def backward(self, z) -> None:

@@ -11,6 +11,11 @@ class UnOp:
     def forward(self) -> None: raise NotImplementedError(f"forward not implemented for {self.__class__.__name__}")
     def __repr__(self) -> str: return f"{self.__class__.__name__}: {self.out.__repr__()}"
 
+class AllocTmp:
+    def __init__(self, shape: tuple, value: float) -> None: self.shape, self.value = shape, value
+    def forward(self) -> None: PROG.driver.allocTmp(self.value, self.shape)
+    def __repr__(self) -> str: return f"AllocTmp: {self.shape}, {self.value}"
+
 class Add(BinOp):
     def forward(self) -> None:
         PROG.driver.add(self.lhs, self.rhs, self.out)
@@ -30,7 +35,7 @@ class Div(BinOp):
 class Dot(BinOp):
     def forward(self) -> None:
         PROG.driver.dot(self.lhs, self.rhs, self.out)
-        self.out.shape = self.lhs.shape[:-1] + [self.rhs.shape[-1]]
+        self.out.shape = self.lhs.shape[:-1] + (self.rhs.shape[-1],)
 
 class Pow(UnOp):
     def __init__(self, src, pow, out) -> None:
@@ -63,7 +68,7 @@ class Trans(UnOp):
     def forward(self) -> None:
         PROG.driver.trans(self.src, self.out)
         shape = self.src.shape
-        self.out.shape = shape[:-2] + [shape[-1], shape[-2]]
+        self.out.shape = shape[:-2] + (shape[-1], shape[-2])
 class Exp(UnOp):
     def forward(self) -> None:
         PROG.driver.exp(self.src, self.out)

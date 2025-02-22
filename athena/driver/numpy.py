@@ -3,19 +3,17 @@ import numpy as np
 
 class NumpyDriver(Singleton, Driver):
     def compile(self) -> None:
-        for i in range(len(self.static)):
-            obj = self.static[i]
-            if len(obj) == 2: self._mem.append(obj[1])
-            else: self._mem.append(np.full(obj[2], obj[1]))
-            obj[0].id = i
-        x = len(self.static)
+        x = len(self._mem)
         self.sshapeLen = x
-        for i in range(len(self.temp)):
-            obj = self.temp[i]
-            if len(obj) == 2: self._mem.append(np.array(obj[1]))
-            else: self._mem.append(np.full(obj[2], obj[1]))
-            obj[0].id = i + x
-        del self.static, self.temp
+        for i in range(len(self.tmp)): self.tmp[i].id = i + x
+        del self.tmp
+    def allocObj(self, obj: np.ndarray, tens) -> None:
+        tens.id = len(self._mem)
+        self._mem.append(obj)
+    def allocNum(self, num: float, shape: tuple, tens) -> None:
+        tens.id = len(self._mem)
+        self._mem.append(np.full(shape, num))
+    def allocTmp(self, num: float, shape: tuple) -> None: self._mem.append(np.full(shape, num))
     def load(self, id: int, data: np.ndarray) -> None: self._mem[id][:] = data
     def numpy(self, id: int, out: np.ndarray) -> None: out[:] = self._mem[id]
     def fill(self, id: int, value: float) -> None: self._mem[id].fill(value)
@@ -32,4 +30,4 @@ class NumpyDriver(Singleton, Driver):
     def muls(self, src, scalar, out) -> None: self._mem[out.id] = np.multiply(self._mem[src.id], scalar)
     def exp(self, src, out) -> None: self._mem[out.id] = np.exp(self._mem[src.id])
     def neg(self, src, out) -> None: self._mem[out.id] = np.negative(self._mem[src.id])
-    def passComplete(self) -> None: pass
+    def passComplete(self) -> None: self._mem = self._mem[:self.sshapeLen]

@@ -4,8 +4,6 @@ from .program import *
 from .ops import *
 import numpy as np
 
-DELTA = 1e-6
-
 def broadcast(lhs: Tensor, rhs: Union[float, int, Tensor]) -> Tensor:
     if type(rhs) != Tensor: return Tensor(None, shape=lhs.shape, num=rhs)
     if type(rhs) == Tensor and type(lhs) == Tensor:
@@ -21,14 +19,18 @@ class Tensor:
             data = np.array(data, dtype=np.float32)
             if shape is not None: data = data.reshape(shape)
             self.shape = data.shape
-            PROG.driver.allocateObj(data, sshape, self)
+            PROG.driver.allocObj(data, self)
+            self.sshape = True
         else:
             assert shape is not None, "shape and data can't be None"
-            PROG.driver.allocateNum(0 if num is None else num, shape, sshape, self)
+            if sshape: PROG.driver.allocNum(0 if num is None else num, shape, self)
+            else:
+                PROG.driver.allocTemp(self)
+                PROG.f(AllocTmp(shape, 0 if num is None else num))
+            self.sshape = sshape
             self.shape = shape
         if requireGrad: self.grad = Tensor(None, shape=self.shape, requireGrad=False, sshape=sshape)
         else: self.grad = None
-        self.sshape = sshape
         self.data = None
     @staticmethod
     def rand(shape: tuple, sshape: bool = False) -> Tensor: return Tensor(data=np.random.randn(*shape), sshape=sshape)
@@ -80,7 +82,6 @@ class Tensor:
         PROG.f(Div(self, rhs, t := Tensor(None, self.shape)))
         tmp = Tensor(None, self.shape, num=1)
         PROG.ba([
-            AddS(rhs, DELTA, rhs),
             Div(tmp, rhs, tmp),
             Mul(tmp, t.grad, tmp),
             Add(tmp, self.grad, self.grad)
@@ -94,9 +95,9 @@ class Tensor:
         targetShape = tuple(list(self.shape[:-1]) + [rhs.shape[-1]])
         PROG.f(Dot(self, rhs, t := Tensor(None, targetShape)))
         shape = rhs.shape
-        tmp = Tensor(None, shape=shape[:-2] + [shape[-1], shape[-2]])
+        tmp = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]))
         shape = self.shape
-        tmp2 = Tensor(None, shape=shape[:-2] + [shape[-1], shape[-2]])
+        tmp2 = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]))
         PROG.ba([
             Trans(rhs, tmp),
             Dot(t.grad, tmp, tmp),
