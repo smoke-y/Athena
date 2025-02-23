@@ -1,7 +1,7 @@
 #include <stdio.h>
 
-#define BIN_TEMPLATE(OP, NAME)                                   \
-    __global__ void NAME(const float *a, const float *b, float *c, const unsigned X, const unsigned Y){                                                 \
+#define BIN_TEMPLATE(OP, KERNEL, NAME)                           \
+    __global__ void KERNEL(const float *a, const float *b, float *c, const unsigned X, const unsigned Y){\
         const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;  \
         const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;  \
         if(x < X && y < Y){                                      \
@@ -9,9 +9,15 @@
             c[id] = a[id] OP b[id];                              \
         };                                                       \
     };                                                           \
+    EXPORT void NAME(const float *a, const float *b, float *c, const unsigned X, const unsigned Y){\
+        dim3 gridSize(2, 2);                                     \
+        dim3 blockSize(((X+1)/2)+1, ((Y+1)/2)+1);                \
+        KERNEL<<<gridSize, blockSize>>>(a,b,c,X,Y);              \
+    };                                                           \
+    
 
-#define BIN_SCAL_TEMPLATE(OP, NAME)                              \
-    __global__ void NAME(const float *a, float *b, const float scalar, const unsigned X, const unsigned Y){                                                 \
+#define BIN_SCAL_TEMPLATE(OP, KERNEL, NAME)                      \
+    __global__ void KERNEL(const float *a, float *b, const float scalar, const unsigned X, const unsigned Y){\
         const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;  \
         const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;  \
         if(x < X && y < Y){                                      \
@@ -19,20 +25,20 @@
             b[id] = a[id] OP scalar;                             \
         };                                                       \
     };                                                           \
+    EXPORT void NAME(const float *a, float *b, const float scalar, const unsigned X, const unsigned Y){\
+        dim3 gridSize(2, 2);                                     \
+        dim3 blockSize(((X+1)/2)+1, ((Y+1)/2)+1);                \
+        KERNEL<<<gridSize, blockSize>>>(a,b,scalar,X,Y);         \
+    };                                                           \
 
-BIN_TEMPLATE(+, addKernel)
-BIN_TEMPLATE(-, subKernel)
-BIN_TEMPLATE(*, mulKernel)
-BIN_TEMPLATE(/, divKernel)
+BIN_TEMPLATE(+, addKernel, add)
+BIN_TEMPLATE(-, subKernel, sub)
+BIN_TEMPLATE(*, mulKernel, mul)
+BIN_TEMPLATE(/, divKernel, divnotstd)
 
-BIN_SCAL_TEMPLATE(+, addsKernel)
-BIN_SCAL_TEMPLATE(*, mulsKernel)
+BIN_SCAL_TEMPLATE(+, addsKernel, adds)
+BIN_SCAL_TEMPLATE(*, mulsKernel, muls)
 
-EXPORT void add(const float *a, const float *b, float *c, const unsigned X, const unsigned Y){
-    dim3 gridSize(2, 2);
-    dim3 blockSize(max(X/2,1), max(Y/2,1));
-    addKernel<<<gridSize, blockSize>>>(a,b,c,X,Y);
-};
 
 __global__ void addtKernel(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
     const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;

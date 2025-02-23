@@ -2,4 +2,5 @@ if [ ! -d "bin/" ]; then
     mkdir bin/
 fi
 
-nvcc -shared -c athena/driver/cuda/kernels/comp.cu -o bin/kernel.so --expt-relaxed-constexpr --extended-lambda
+nvcc -c -o bin/kernel.o athena/driver/cuda/kernels/comp.cu -Xcompiler -fPIC
+nvcc -shared -o bin/kernel.so bin/kernel.o

@@ -25,7 +25,7 @@ class Tensor:
             assert shape is not None, "shape and data can't be None"
             if sshape: PROG.driver.allocNum(0 if num is None else num, shape, self)
             else:
-                PROG.driver.allocTemp(self)
+                PROG.driver.allocTmpComp(self)
                 PROG.f(AllocTmp(shape, 0 if num is None else num))
             self.sshape = sshape
             self.shape = shape

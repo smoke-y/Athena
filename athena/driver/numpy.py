@@ -2,11 +2,6 @@ from .driver import *
 import numpy as np
 
 class NumpyDriver(Singleton, Driver):
-    def compile(self) -> None:
-        x = len(self._mem)
-        self.sshapeLen = x
-        for i in range(len(self.tmp)): self.tmp[i].id = i + x
-        del self.tmp
     def allocObj(self, obj: np.ndarray, tens) -> None:
         tens.id = len(self._mem)
         self._mem.append(obj)
