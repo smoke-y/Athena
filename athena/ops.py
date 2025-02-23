@@ -17,65 +17,40 @@ class AllocTmp:
     def __repr__(self) -> str: return f"AllocTmp: {self.shape}, {self.value}"
 
 class Add(BinOp):
-    def forward(self) -> None:
-        PROG.driver.add(self.lhs, self.rhs, self.out)
-        self.out.shape = self.lhs.shape
+    def forward(self) -> None: PROG.driver.add(self.lhs, self.rhs, self.out)
 class Sub(BinOp):
-    def forward(self) -> None:
-        PROG.driver.sub(self.lhs, self.rhs, self.out)
-        self.out.shape = self.lhs.shape
+    def forward(self) -> None: PROG.driver.sub(self.lhs, self.rhs, self.out)
 class Mul(BinOp):
-    def forward(self) -> None:
-        PROG.driver.mul(self.lhs, self.rhs, self.out)
-        self.out.shape = self.lhs.shape
+    def forward(self) -> None: PROG.driver.mul(self.lhs, self.rhs, self.out)
 class Div(BinOp):
-    def forward(self) -> None:
-        PROG.driver.div(self.lhs, self.rhs, self.out)
-        self.out.shape = self.lhs.shape
+    def forward(self) -> None: PROG.driver.div(self.lhs, self.rhs, self.out)
 class Dot(BinOp):
-    def forward(self) -> None:
-        PROG.driver.dot(self.lhs, self.rhs, self.out)
-        self.out.shape = self.lhs.shape[:-1] + (self.rhs.shape[-1],)
+    def forward(self) -> None: PROG.driver.dot(self.lhs, self.rhs, self.out)
 
 class Pow(UnOp):
     def __init__(self, src, pow, out) -> None:
         super().__init__(src, out)
         self.pow = pow
-    def forward(self) -> None:
-        PROG.driver.pow(self.src, self.pow, self.out)
-        self.out.shape = self.src.shape
+    def forward(self) -> None: PROG.driver.pow(self.src, self.pow, self.out)
 class AddS(UnOp):
     def __init__(self, src, scalar, out) -> None:
         super().__init__(src, out)
         self.scalar = scalar
-    def forward(self) -> None:
-        PROG.driver.adds(self.src, self.scalar, self.out)
-        self.out.shape = self.src.shape
+    def forward(self) -> None: PROG.driver.adds(self.src, self.scalar, self.out)
 class MulS(UnOp):
     def __init__(self, src, scalar, out) -> None:
         super().__init__(src, out)
         self.scalar = scalar
-    def forward(self) -> None:
-        PROG.driver.muls(self.src, self.scalar, self.out)
-        self.out.shape = self.src.shape
+    def forward(self) -> None: PROG.driver.muls(self.src, self.scalar, self.out)
 class AddT(UnOp):
-    def forward(self) -> None:
-        PROG.driver.addt(self.src, self.out)
-        self.out.shape = self.src.shape
+    def forward(self) -> None: PROG.driver.addt(self.src, self.out)
 class Sum(UnOp):
     def forward(self) -> None: PROG.driver.sum(self.src, self.out)
 class Trans(UnOp):
-    def forward(self) -> None:
-        PROG.driver.trans(self.src, self.out)
-        shape = self.src.shape
-        self.out.shape = shape[:-2] + (shape[-1], shape[-2])
+    def forward(self) -> None: PROG.driver.trans(self.src, self.out)
 class Exp(UnOp):
-    def forward(self) -> None:
-        PROG.driver.exp(self.src, self.out)
-        self.out.shape = self.src.shape
+    def forward(self) -> None: PROG.driver.exp(self.src, self.out)
 class Neg(UnOp):
-    def forward(self) -> None:
-        PROG.driver.neg(self.src, self.out)
-        self.out.shape = self.src.shape
+    def forward(self) -> None: PROG.driver.neg(self.src, self.out)
 class Fill(UnOp):
     def forward(self) -> None: PROG.driver.fill(self.src.id, self.out)

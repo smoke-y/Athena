@@ -1,4 +1,4 @@
-#define EXPORT extern "C" __declspec(dllexport)
+#define EXPORT __attribute__((visibility("default")))
 
 #include "driver.cu"
 #include "com.cu"

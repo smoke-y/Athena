@@ -13,7 +13,7 @@ class SGD(Optimizer):
         for param in params:
             PROG.oa([
                 MulS(param.grad, lr, param.grad),
-                Sub(param.grad, param, param),
+                Sub(param, param.grad, param),
             ])
             self.zeroGradInstrBuff.append(Fill(param.grad, 0.0))
     def step(self) -> None:

@@ -39,10 +39,8 @@ for epoch in range(3000):
         PROG.backward(loss)
         optimizer.step()
         PROG.passComplete()
-PROG.printOptimize()
 for i in data:
     inp.load(i[:2])
     PROG.forward()
     print(inp.numpy(), "->", x2.numpy())
-    optimizer.step()
     PROG.passComplete()

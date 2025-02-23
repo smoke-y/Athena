@@ -1,4 +1,3 @@
-from numpy.ctypeslib import ndpointer
 from ..driver import *
 import numpy as np
 import ctypes
@@ -7,7 +6,7 @@ class CudaDriver(Singleton, Driver):
     def __init__(self) -> None:
         super().__init__()
         self.chunkSize = 4096
-        self.dll = ctypes.cdll.LoadLibrary("bin/kernel.dll")
+        self.dll = ctypes.cdll.LoadLibrary("bin/kernel.so")
         self.dll.allocNum.restype = ctypes.c_void_p
         self.chunks = [self.dll.allocChunk(self.chunkSize)]
         self.offs   = [0.0]
