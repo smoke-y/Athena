@@ -70,11 +70,20 @@ class Tensor:
         ])
         return t
     def __mul__(self, rhs: Tensor) -> Tensor:
+        if type(rhs) in [float, int]:
+            PROG.f(MulS(self, rhs, t := Tensor(None, self.shape)))
+            PROG.ba([
+                MulS(t.grad, rhs, tmp:=Tensor(None, self.shape)),
+                Add(tmp, self.grad, self.grad),
+            ])
+            return t
         rhs = broadcast(self, rhs)
         PROG.f(Mul(self, rhs, t := Tensor(None, self.shape)))
         PROG.ba([
-            Add(rhs, self.grad, self.grad),
-            Add(self, rhs.grad, rhs.grad),
+            Mul(t.grad, rhs, tmp:=Tensor(None, self.shape)),
+            Add(tmp, self.grad, self.grad),
+            Mul(t.grad, self, tmp:=Tensor(None, self.shape)),
+            Add(tmp, rhs.grad, rhs.grad),
         ])
         return t
     def __truediv__(self, rhs: Union[float, int]) -> Tensor:

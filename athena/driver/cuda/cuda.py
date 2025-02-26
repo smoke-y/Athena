@@ -47,3 +47,38 @@ class CudaDriver(Singleton, Driver):
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
             lhs.shape[-1], lhs.shape[-2])
+    def sub(self, lhs, rhs, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.sub(
+            ctypes.c_int64(self._mem[lhs.id]),
+            ctypes.c_int64(self._mem[rhs.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            lhs.shape[-1], lhs.shape[-2])
+    def mul(self, lhs, rhs, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.mul(
+            ctypes.c_int64(self._mem[lhs.id]),
+            ctypes.c_int64(self._mem[rhs.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            lhs.shape[-1], lhs.shape[-2])
+    def div(self, lhs, rhs, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.divnotstd(
+            ctypes.c_int64(self._mem[lhs.id]),
+            ctypes.c_int64(self._mem[rhs.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            lhs.shape[-1], lhs.shape[-2])
+    def adds(self, src, scalar, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.adds(
+            ctypes.c_int64(self._mem[src.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            ctypes.c_float(scalar),
+            src.shape[-1], src.shape[-2])
+    def muls(self, src, scalar, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.muls(
+            ctypes.c_int64(self._mem[src.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            ctypes.c_float(scalar),
+            src.shape[-1], src.shape[-2])

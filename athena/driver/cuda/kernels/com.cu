@@ -40,7 +40,7 @@ BIN_SCAL_TEMPLATE(+, addsKernel, adds)
 BIN_SCAL_TEMPLATE(*, mulsKernel, muls)
 
 
-__global__ void addtKernel(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
+__global__ void addtKernel(const float *a, float *b, const unsigned X, const unsigned Y){
     const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
     const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
     if(x < X && y < Y){
