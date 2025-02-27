@@ -10,9 +10,9 @@
         };                                                       \
     };                                                           \
     EXPORT void NAME(const float *a, const float *b, float *c, const unsigned X, const unsigned Y){\
-        dim3 gridSize(2, 2);                                     \
-        dim3 blockSize(((X+1)/2)+1, ((Y+1)/2)+1);                \
-        KERNEL<<<gridSize, blockSize>>>(a,b,c,X,Y);              \
+        dim3 block(THREADS, THREADS);                            \
+        dim3 grid((X+THREADS+1)/THREADS, (Y+THREADS+1)/THREADS); \
+        KERNEL<<<grid, block>>>(a,b,c,X,Y);                      \
     };                                                           \
     
 
@@ -26,9 +26,9 @@
         };                                                       \
     };                                                           \
     EXPORT void NAME(const float *a, float *b, const float scalar, const unsigned X, const unsigned Y){\
-        dim3 gridSize(2, 2);                                     \
-        dim3 blockSize(((X+1)/2)+1, ((Y+1)/2)+1);                \
-        KERNEL<<<gridSize, blockSize>>>(a,b,scalar,X,Y);         \
+        dim3 block(THREADS, THREADS);                            \
+        dim3 grid((X+THREADS+1)/THREADS, (Y+THREADS+1)/THREADS); \
+        KERNEL<<<grid, block>>>(a,b,scalar,X,Y);                 \
     };                                                           \
 
 BIN_TEMPLATE(+, addKernel, add)
@@ -48,7 +48,6 @@ __global__ void addtKernel(const float *a, float *b, const unsigned X, const uns
         b[id] += a[0];
     }
 }
-
 __global__ void powKernel(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
     const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
     const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
@@ -56,6 +55,16 @@ __global__ void powKernel(const float *a, float *b, const float pow, const unsig
         const unsigned id = y*X + x;
         b[id] = __powf(a[id], pow);
     }
+}
+EXPORT void addt(const float *a, float *b, const unsigned X, const unsigned Y){
+    dim3 block(THREADS, THREADS);
+    dim3 grid((X+THREADS+1)/THREADS, (Y+THREADS+1)/THREADS);
+    addtKernel<<<grid, block>>>(a,b,X,Y);
+}
+EXPORT void pownotstd(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
+    dim3 block(THREADS, THREADS);
+    dim3 grid((X+THREADS+1)/THREADS, (Y+THREADS+1)/THREADS);
+    powKernel<<<grid, block>>>(a,b,pow,X,Y);
 }
 
 void getInfo(char *buff){

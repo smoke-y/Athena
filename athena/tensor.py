@@ -125,6 +125,21 @@ class Tensor:
             Add(tmp, self.grad, self.grad)
         ])
         return t
+    def __neg__(self) -> Tensor:
+        PROG.f(Neg(self, t := Tensor(None, self.shape)))
+        PROG.ba([
+            Neg(t.grad, tmp := Tensor(None, t.shape)),
+            Add(tmp, self.grad, self.grad)
+        ])
+        return t
+    def trans(self) -> Tensor:
+        shape = self.shape
+        PROG.f(Trans(self, t := Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]))))
+        PROG.ba([
+            Trans(t.grad, tmp := Tensor(None, self.shape)),
+            Add(t.grad, tmp, tmp)
+        ])
+        return t
     def load(self, data: Union[np.ndarray, list, tuple]) -> None:
         if type(data) != np.ndarray: data = np.array(data)
         data = data.reshape(self.shape)

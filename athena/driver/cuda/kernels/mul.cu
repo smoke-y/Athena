@@ -1,4 +1,4 @@
-__global__ void mul_slow(const float *a, const float *b, float *c, const unsigned int X1, const unsigned int X2, const unsigned int Y1){
+__global__ void dotKernel_slow(const float *a, const float *b, float *c, const unsigned int X1, const unsigned int X2, const unsigned int Y1){
     const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
     const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
 
@@ -11,9 +11,7 @@ __global__ void mul_slow(const float *a, const float *b, float *c, const unsigne
     };
 };
 
-#define TILE_WIDTH 32
-
-__global__ void mul(const float *a, const float *b, float *c, const unsigned int X1, const unsigned int X2, const unsigned int Y1){
+__global__ void dotKernel(const float *a, const float *b, float *c, const unsigned int X1, const unsigned int X2, const unsigned int Y1){
     const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
     const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
 
@@ -33,6 +31,12 @@ __global__ void mul(const float *a, const float *b, float *c, const unsigned int
     };
     if(y < Y1 && x < X2) c[y*X2 + x] = acum;
 };
+
+EXPORT void dot(const float *a, const float *b, float *c, const unsigned int X1, const unsigned int X2, const unsigned int Y1){
+    dim3 block(THREADS, THREADS);
+    dim3 grid((max(X1,X2)+THREADS+1)/THREADS, (max(Y1,X1)+THREADS+1)/THREADS);
+    dotKernel<<<grid, block>>>(a,b,c,X1,X2,Y1);
+}
 
 #if(TEST)
 

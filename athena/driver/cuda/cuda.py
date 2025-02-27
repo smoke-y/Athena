@@ -68,6 +68,13 @@ class CudaDriver(Singleton, Driver):
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
             lhs.shape[-1], lhs.shape[-2])
+    def dot(self, lhs, rhs, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.dot(
+            ctypes.c_int64(self._mem[lhs.id]),
+            ctypes.c_int64(self._mem[rhs.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            lhs.shape[-2], rhs.shape[-2], lhs.shape[-1])
     def adds(self, src, scalar, out) -> None:
         if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.adds(
@@ -81,4 +88,29 @@ class CudaDriver(Singleton, Driver):
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             ctypes.c_float(scalar),
+            src.shape[-1], src.shape[-2])
+    def addt(self, src, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.addt(
+            ctypes.c_int64(self._mem[src.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            src.shape[-1], src.shape[-2])
+    def pow(self, src, p, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.pownotstd(
+            ctypes.c_int64(self._mem[src.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            ctypes.c_float(p),
+            src.shape[-1], src.shape[-2])
+    def neg(self, src, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.neg(
+            ctypes.c_int64(self._mem[src.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            src.shape[-1], src.shape[-2])
+    def trans(self, src, out) -> None:
+        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
+        self.dll.trans(
+            ctypes.c_int64(self._mem[src.id]),
+            ctypes.c_int64(self._mem[out.id]),
             src.shape[-1], src.shape[-2])
