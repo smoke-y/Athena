@@ -40,6 +40,11 @@ class CudaDriver(Singleton, Driver):
             out.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
             ctypes.c_int64(self._mem[id]),
             out.size)
+    def load(self, id, data: np.ndarray) -> None:
+        self.dll.load(
+            ctypes.c_int64(self._mem[id]),
+            data.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
+            data.size)
     def add(self, lhs, rhs, out) -> None:
         if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.add(
@@ -114,3 +119,22 @@ class CudaDriver(Singleton, Driver):
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             src.shape[-1], src.shape[-2])
+    def fill(self, src, value) -> None:
+        if not src.sshape: self._mem[src.id] = self.allocTmp(0, src.shape)
+        self.dll.fill(
+            ctypes.c_int64(self._mem[src.id]),
+            ctypes.c_float(value),
+            src.shape[-1] * src.shape[-2])
+    def exp(self, src, dst) -> None:
+        if not src.sshape: self._mem[src.id] = self.allocTmp(0, src.shape)
+        self.dll.expnotstd(
+            ctypes.c_int64(self._mem[src.id]),
+            ctypes.c_int64(self._mem[dst.id]),
+            src.shape[-1], src.shape[-2])
+    def sum(self, src, out) -> None:
+        if not src.sshape: self._mem[src.id] = self.allocTmp(0, out.shape)
+        self.dll.sum(
+            ctypes.c_int64(self._mem[src.id]),
+            ctypes.c_int64(self._mem[out.id]),
+            src.shape[-1], src.shape[-2]
+        )

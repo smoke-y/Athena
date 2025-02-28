@@ -42,7 +42,7 @@ class Tensor:
         PROG.driver.numpy(self.id, self.data) 
         return self.data
     def sum(self) -> Tensor:
-        PROG.f(Sum(self, t := Tensor(None, tuple(list(self.shape[:-2])+[1]), requireGrad=self.grad != None)))
+        PROG.f(Sum(self, t := Tensor(None, tuple(list(self.shape[:-1])+[1]))))
         PROG.ba([AddT(t.grad, self.grad)])
         return t
     def numel(self) -> Tensor:
