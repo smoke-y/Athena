@@ -11,7 +11,7 @@ class CudaDriver(Singleton, Driver):
         self.dll.allocObj.restype = ctypes.c_void_p
         self.dll.allocChunk.restype = ctypes.c_void_p
         self.chunks = [self.dll.allocChunk(self.chunkSize)]
-        self.offs   = [0.0]
+        self.offs   = [0]
     def __del__(self) -> None:
         for chunk in self.chunks: self.dll.freeMem(ctypes.c_int64(chunk))
         for i in range(self.sshapeLen): self.dll.freeMem(ctypes.c_int64(self._mem[i]))
@@ -24,17 +24,17 @@ class CudaDriver(Singleton, Driver):
     def allocTmp(self, value: float, shape: tuple) -> None:
         count = int(np.prod(shape))
         for i in range(len(self.chunks)):
-            if self.chunkSize - self.offs[i] <= count:
+            if self.chunkSize - self.offs[i] >= count:
                 off = self.offs[i]
                 self.offs[i] += count*ctypes.sizeof(ctypes.c_float)
-                self._mem.append(off:=self.chunks[i] + off)
-                self.dll.fill(off, count, value)
-                return off
-        self.chunks.append(off:=self.dll.allocChunk(self.chunkSize))
-        self.offs.append(count*ctypes.sizeof(ctypes.c_float))
-        self._mem.append(off)
-        self.dll.fill(off, count, value)
-        return off
+                self._mem.append(dst:=self.chunks[i] + off)
+                self.dll.fill(ctypes.c_int64(dst), count, ctypes.c_float(value))
+                return dst
+        self.chunks.append(dst:=self.dll.allocChunk(self.chunkSize))
+        self.offs.append(0)
+        self._mem.append(dst)
+        self.dll.fill(ctypes.c_int64(dst), count, ctypes.c_float(value))
+        return dst
     def numpy(self, id: int, out: np.ndarray) -> None:
         self.dll.numpy(
             out.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
@@ -46,95 +46,83 @@ class CudaDriver(Singleton, Driver):
             data.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
             data.size)
     def add(self, lhs, rhs, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.add(
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
             lhs.shape[-1], lhs.shape[-2])
     def sub(self, lhs, rhs, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.sub(
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
             lhs.shape[-1], lhs.shape[-2])
     def mul(self, lhs, rhs, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.mul(
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
             lhs.shape[-1], lhs.shape[-2])
     def div(self, lhs, rhs, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.divnotstd(
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
             lhs.shape[-1], lhs.shape[-2])
     def dot(self, lhs, rhs, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.dot(
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
             lhs.shape[-2], rhs.shape[-2], lhs.shape[-1])
     def adds(self, src, scalar, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.adds(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             ctypes.c_float(scalar),
             src.shape[-1], src.shape[-2])
     def muls(self, src, scalar, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.muls(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             ctypes.c_float(scalar),
             src.shape[-1], src.shape[-2])
     def addt(self, src, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.addt(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             src.shape[-1], src.shape[-2])
     def pow(self, src, p, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.pownotstd(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             ctypes.c_float(p),
             src.shape[-1], src.shape[-2])
     def neg(self, src, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.neg(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             src.shape[-1], src.shape[-2])
     def trans(self, src, out) -> None:
-        if not out.sshape: self._mem[out.id] = self.allocTmp(0, out.shape)
         self.dll.trans(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             src.shape[-1], src.shape[-2])
     def fill(self, src, value) -> None:
-        if not src.sshape: self._mem[src.id] = self.allocTmp(0, src.shape)
         self.dll.fill(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_float(value),
             src.shape[-1] * src.shape[-2])
     def exp(self, src, dst) -> None:
-        if not src.sshape: self._mem[src.id] = self.allocTmp(0, src.shape)
         self.dll.expnotstd(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[dst.id]),
             src.shape[-1], src.shape[-2])
     def sum(self, src, out) -> None:
-        if not src.sshape: self._mem[src.id] = self.allocTmp(0, out.shape)
         self.dll.sum(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             src.shape[-1], src.shape[-2]
         )
+    def passComplete(self) -> None:
+        for i in range(len(self.offs)): self.offs[i] = 0

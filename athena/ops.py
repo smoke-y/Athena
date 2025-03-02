@@ -53,4 +53,4 @@ class Exp(UnOp):
 class Neg(UnOp):
     def forward(self) -> None: PROG.driver.neg(self.src, self.out)
 class Fill(UnOp):
-    def forward(self) -> None: PROG.driver.fill(self.src.id, self.out)
+    def forward(self) -> None: PROG.driver.fill(self.src, self.out)

@@ -11,7 +11,7 @@ class NumpyDriver(Singleton, Driver):
     def allocTmp(self, num: float, shape: tuple) -> None: self._mem.append(np.full(shape, num))
     def load(self, id: int, data: np.ndarray) -> None: self._mem[id][:] = data
     def numpy(self, id: int, out: np.ndarray) -> None: out[:] = self._mem[id]
-    def fill(self, id: int, value: float) -> None: self._mem[id].fill(value)
+    def fill(self, src, value: float) -> None: self._mem[src.id].fill(value)
     def add(self, lhs, rhs, out) -> None: self._mem[out.id] = np.add(self._mem[lhs.id], self._mem[rhs.id])
     def sub(self, lhs, rhs, out) -> None: self._mem[out.id] = np.subtract(self._mem[lhs.id], self._mem[rhs.id])
     def mul(self, lhs, rhs, out) -> None: self._mem[out.id] = np.multiply(self._mem[lhs.id], self._mem[rhs.id])

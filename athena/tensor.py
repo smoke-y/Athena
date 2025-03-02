@@ -35,7 +35,7 @@ class Tensor:
     @staticmethod
     def rand(shape: tuple, sshape: bool = False) -> Tensor: return Tensor(data=np.random.randn(*shape), sshape=sshape)
     def __repr__(self) -> str: return f"<Tensor {self.shape} @ {self.id}>"
-    def _fill(self, value: float) -> None: PROG.driver.fill(self.id, value)
+    def _fill(self, value: float) -> None: PROG.driver.fill(self, value)
     def dim(self) -> int: return len(self.shape)
     def numpy(self) -> np.ndarray:
         if self.data is None: self.data = np.zeros(self.shape, dtype=np.float32)
@@ -55,7 +55,8 @@ class Tensor:
             PROG.ba([Add(self.grad, t.grad, self.grad)])
             return t
         rhs = broadcast(self, rhs)
-        PROG.f(Add(self, rhs, t := Tensor(None, self.shape)))
+        #TODO: requireGrad for every latent tensors
+        PROG.f(Add(self, rhs, t := Tensor(None, self.shape, requireGrad=self.grad is not None)))
         PROG.ba([
             Add(self.grad, t.grad, self.grad),
             Add(rhs.grad, t.grad, rhs.grad)
@@ -141,6 +142,6 @@ class Tensor:
         ])
         return t
     def load(self, data: Union[np.ndarray, list, tuple]) -> None:
-        if type(data) != np.ndarray: data = np.array(data)
+        data = np.array(data,dtype=np.float32)
         data = data.reshape(self.shape)
         PROG.driver.load(self.id, data)

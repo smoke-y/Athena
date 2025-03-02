@@ -18,7 +18,7 @@ __global__ void expKernel(const float *a, float *b, const unsigned X, const unsi
     const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
     if(x < X && y < Y){
         const unsigned index = y*X + x;
-        b[index] = exp(a[index]);
+        b[index] = expf(a[index]);
     };
 }
 __global__ void sumKernel(const float *a, float *b, const unsigned X, const unsigned Y){
