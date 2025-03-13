@@ -14,10 +14,11 @@ EXPORT float* allocNum(unsigned count, float num){
 };
 EXPORT void load(float *dst, float *src, unsigned count){cudaMemcpy(dst, src, count*sizeof(float), cudaMemcpyHostToDevice);};
 EXPORT void numpy(float *dst, float *src, unsigned count){cudaMemcpy(dst, src, count*sizeof(float), cudaMemcpyDeviceToHost);};
-EXPORT void fill(float *dst, unsigned count, float num){
+EXPORT void fill(float *dst, float num, unsigned count){
     float *hostMem = (float*)malloc(sizeof(float)*count);
     for(int i=0; i<count; i++) hostMem[i] = num;
     cudaMemcpy(dst, hostMem, count*sizeof(float), cudaMemcpyHostToDevice);
+    free(hostMem);
 }
 EXPORT float* allocChunk(unsigned size){
     float *mem;

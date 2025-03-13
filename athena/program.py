@@ -22,7 +22,7 @@ class Program:
     def forward(self) -> None:
         for i in self.forwardSet: i.forward()
     def backward(self, z) -> None:
-        z.grad._fill(1)
+        z.grad._fill(1.0)
         for i in self.backwardSet: i.forward()
     def passComplete(self) -> None: self.driver.passComplete()
     def reset(self) -> None:

@@ -15,6 +15,10 @@ class AllocTmp:
     def __init__(self, tens, shape: tuple, value: float) -> None: self.shape, self.value, self.tens = shape, value, tens
     def forward(self) -> None: PROG.driver.allocTmp(self.value, self.shape)
     def __repr__(self) -> str: return f"AllocTmp: {self.shape}, {self.value} -> {self.tens.id}"
+class DBG:
+    def __init__(self, tens) -> None: self.tens = tens
+    def forward(self) -> None: print(f"{self.tens.id} -> ({self.tens.shape}\n", self.tens.numpy(), "\n----------")
+    def __repr__(self) -> str: return f"DBG: {self.tens.id}"
 
 class Add(BinOp):
     def forward(self) -> None: PROG.driver.add(self.lhs, self.rhs, self.out)

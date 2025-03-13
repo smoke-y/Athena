@@ -15,7 +15,7 @@ void printGPUBuff(const float *ptr, const unsigned x, const unsigned y){
         printf("\n");
     }
     free(mem);
-    printf("OVER\n");
+    printf("-------\n");
 }
 
 #include "driver.cu"

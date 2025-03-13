@@ -50,79 +50,79 @@ class CudaDriver(Singleton, Driver):
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
-            lhs.shape[-1], lhs.shape[-2])
+            lhs.shape[-2], lhs.shape[-1])
     def sub(self, lhs, rhs, out) -> None:
         self.dll.sub(
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
-            lhs.shape[-1], lhs.shape[-2])
+            lhs.shape[-2], lhs.shape[-1])
     def mul(self, lhs, rhs, out) -> None:
         self.dll.mul(
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
-            lhs.shape[-1], lhs.shape[-2])
+            lhs.shape[-2], lhs.shape[-1])
     def div(self, lhs, rhs, out) -> None:
         self.dll.divnotstd(
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
-            lhs.shape[-1], lhs.shape[-2])
+            lhs.shape[-2], lhs.shape[-1])
     def dot(self, lhs, rhs, out) -> None:
         self.dll.dot(
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
-            lhs.shape[-2], rhs.shape[-2], lhs.shape[-1])
+            lhs.shape[-2], rhs.shape[-1], lhs.shape[-1])
     def adds(self, src, scalar, out) -> None:
         self.dll.adds(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             ctypes.c_float(scalar),
-            src.shape[-1], src.shape[-2])
+            src.shape[-2], src.shape[-1])
     def muls(self, src, scalar, out) -> None:
         self.dll.muls(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             ctypes.c_float(scalar),
-            src.shape[-1], src.shape[-2])
+            src.shape[-2], src.shape[-1])
     def addt(self, src, out) -> None:
         self.dll.addt(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
-            src.shape[-1], src.shape[-2])
+            src.shape[-2], src.shape[-1])
     def pow(self, src, p, out) -> None:
         self.dll.pownotstd(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
             ctypes.c_uint32(p),
-            src.shape[-1], src.shape[-2])
+            src.shape[-1], src.shape[-1])
     def neg(self, src, out) -> None:
         self.dll.neg(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
-            src.shape[-1], src.shape[-2])
+            src.shape[-2], src.shape[-1])
     def trans(self, src, out) -> None:
         self.dll.trans(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
-            src.shape[-1], src.shape[-2])
+            src.shape[-2], src.shape[-1])
     def fill(self, src, value) -> None:
         self.dll.fill(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_float(value),
-            src.shape[-1] * src.shape[-2])
+            src.shape[-2] * src.shape[-1])
     def exp(self, src, dst) -> None:
         self.dll.expnotstd(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[dst.id]),
-            src.shape[-1], src.shape[-2])
+            src.shape[-2], src.shape[-1])
     def sum(self, src, out) -> None:
         self.dll.sum(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
-            src.shape[-1], src.shape[-2]
+            src.shape[-2], src.shape[-1]
         )
     def passComplete(self) -> None:
         for i in range(len(self.offs)): self.offs[i] = 0

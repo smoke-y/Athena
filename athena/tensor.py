@@ -35,7 +35,7 @@ class Tensor:
     @staticmethod
     def rand(shape: tuple, sshape: bool = False) -> Tensor: return Tensor(data=np.random.randn(*shape), sshape=sshape)
     def __repr__(self) -> str: return f"<Tensor {self.shape} @ {self.id}>"
-    def _fill(self, value: float) -> None: PROG.driver.fill(self, value)
+    def _fill(self, value: float) -> None: PROG.driver.fill(self, float(value))
     def dim(self) -> int: return len(self.shape)
     def numpy(self) -> np.ndarray:
         if self.data is None: self.data = np.zeros(self.shape, dtype=np.float32)
@@ -105,16 +105,16 @@ class Tensor:
         targetShape = tuple(list(self.shape[:-1]) + [rhs.shape[-1]])
         PROG.f(Dot(self, rhs, t := Tensor(None, targetShape)))
         shape = rhs.shape
-        tmp = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]))
+        tmp = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]), requireGrad=False)
         shape = self.shape
-        tmp2 = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]))
+        tmp2 = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]), requireGrad=False)
         PROG.ba([
             Trans(rhs, tmp),
             Dot(t.grad, tmp, tmp),
             Add(self.grad, tmp, self.grad),
             Trans(self, tmp2),
             Dot(tmp2, t.grad, tmp2),
-            Add(rhs.grad, tmp2, rhs.grad)
+            Add(rhs.grad, tmp2, rhs.grad),
         ])
         return t
     def __pow__(self, rhs: Union[float, int]) -> Tensor:
