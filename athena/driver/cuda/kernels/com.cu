@@ -48,12 +48,12 @@ __global__ void addtKernel(const float *a, float *b, const unsigned X, const uns
         b[id] += a[0];
     }
 }
-__global__ void powKernel(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
+__global__ void powKernel(const float *a, float *b, const unsigned exponent, const unsigned X, const unsigned Y){
     const unsigned x = threadIdx.x + blockIdx.x*blockDim.x;
     const unsigned y = threadIdx.y + blockIdx.y*blockDim.y;
     if(x < X && y < Y){
         const unsigned id = y*X + x;
-        b[id] = __powf(a[id], pow);
+        b[id] = pow(a[id], exponent);
     }
 }
 EXPORT void addt(const float *a, float *b, const unsigned X, const unsigned Y){
@@ -61,10 +61,10 @@ EXPORT void addt(const float *a, float *b, const unsigned X, const unsigned Y){
     dim3 grid((X+THREADS+1)/THREADS, (Y+THREADS+1)/THREADS);
     addtKernel<<<grid, block>>>(a,b,X,Y);
 }
-EXPORT void pownotstd(const float *a, float *b, const float pow, const unsigned X, const unsigned Y){
+EXPORT void pownotstd(const float *a, float *b, const unsigned exponent, const unsigned X, const unsigned Y){
     dim3 block(THREADS, THREADS);
     dim3 grid((X+THREADS+1)/THREADS, (Y+THREADS+1)/THREADS);
-    powKernel<<<grid, block>>>(a,b,pow,X,Y);
+    powKernel<<<grid, block>>>(a,b,exponent,X,Y);
 }
 
 void getInfo(char *buff){

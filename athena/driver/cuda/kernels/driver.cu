@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 EXPORT float* allocObj(float* arr, unsigned count){
     float *mem;
     const unsigned size = count*sizeof(float);

@@ -4,17 +4,17 @@ from .program import *
 class BinOp:
     def __init__(self, lhs, rhs, out) -> None: self.lhs, self.rhs, self.out = lhs, rhs, out
     def forward(self) -> None: raise NotImplementedError(f"forward not implemented for {self.__class__.__name__}")
-    def __repr__(self) -> str: return f"{self.__class__.__name__}: {self.lhs.__repr__()}, {self.rhs.__repr__()}"
+    def __repr__(self) -> str: return f"{self.__class__.__name__}: {self.lhs.__repr__()}, {self.rhs.__repr__()} -> {self.out.__repr__()}"
 
 class UnOp:
     def __init__(self, src, out) -> None: self.src, self.out = src, out
     def forward(self) -> None: raise NotImplementedError(f"forward not implemented for {self.__class__.__name__}")
-    def __repr__(self) -> str: return f"{self.__class__.__name__}: {self.out.__repr__()}"
+    def __repr__(self) -> str: return f"{self.__class__.__name__}: {self.src.__repr__()} -> {self.out.__repr__()}"
 
 class AllocTmp:
-    def __init__(self, shape: tuple, value: float) -> None: self.shape, self.value = shape, value
+    def __init__(self, tens, shape: tuple, value: float) -> None: self.shape, self.value, self.tens = shape, value, tens
     def forward(self) -> None: PROG.driver.allocTmp(self.value, self.shape)
-    def __repr__(self) -> str: return f"AllocTmp: {self.shape}, {self.value}"
+    def __repr__(self) -> str: return f"AllocTmp: {self.shape}, {self.value} -> {self.tens.id}"
 
 class Add(BinOp):
     def forward(self) -> None: PROG.driver.add(self.lhs, self.rhs, self.out)

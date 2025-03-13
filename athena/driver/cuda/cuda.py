@@ -96,7 +96,7 @@ class CudaDriver(Singleton, Driver):
         self.dll.pownotstd(
             ctypes.c_int64(self._mem[src.id]),
             ctypes.c_int64(self._mem[out.id]),
-            ctypes.c_float(p),
+            ctypes.c_uint32(p),
             src.shape[-1], src.shape[-2])
     def neg(self, src, out) -> None:
         self.dll.neg(

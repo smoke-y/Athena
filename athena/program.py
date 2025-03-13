@@ -1,5 +1,4 @@
 from __future__ import annotations
-from .driver.numpy import NumpyDriver
 
 class Program:
     def __init__(self) -> None:
@@ -26,5 +25,7 @@ class Program:
         z.grad._fill(1)
         for i in self.backwardSet: i.forward()
     def passComplete(self) -> None: self.driver.passComplete()
+    def reset(self) -> None:
+        self.forwardSet, self.backwardSet, self.optimizerSet = [], [], []
 
 PROG: Program = Program()

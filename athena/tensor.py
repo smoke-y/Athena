@@ -26,7 +26,7 @@ class Tensor:
             if sshape: PROG.driver.allocNum(0 if num is None else num, shape, self)
             else:
                 PROG.driver.allocTmpComp(self)
-                PROG.f(AllocTmp(shape, 0 if num is None else num))
+                PROG.f(AllocTmp(self, shape, 0 if num is None else num))
             self.sshape = sshape
             self.shape = shape
         if requireGrad: self.grad = Tensor(None, shape=self.shape, requireGrad=False, sshape=sshape)
