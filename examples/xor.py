@@ -12,7 +12,7 @@ data = [
 
 from athena import *
 
-PROG.driver = NumpyDriver()
+PROG.driver = CudaDriver()
 
 inp = Tensor(data=None, shape = (1,2), sshape=True)
 tar = Tensor(data=None, shape = (1,1), sshape=True)

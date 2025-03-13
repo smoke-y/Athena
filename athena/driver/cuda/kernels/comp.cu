@@ -8,8 +8,8 @@ void printGPUBuff(const float *ptr, const unsigned x, const unsigned y){
     unsigned size = sizeof(float) * x * y;
     float *mem = (float*)malloc(size);
     cudaMemcpy(mem, ptr, size, cudaMemcpyDeviceToHost);
-    for(int i=0; i<x; i++){
-        for(int j=0; j<y; j++){
+    for(int i=0; i<y; i++){
+        for(int j=0; j<x; j++){
             printf("%f ", mem[i*x + j]);
         };
         printf("\n");

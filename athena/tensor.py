@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Union
+from .driver.numpy import NumpyDriver
 from .program import *
 from .ops import *
 import numpy as np
@@ -31,16 +32,12 @@ class Tensor:
             self.shape = shape
         if requireGrad: self.grad = Tensor(None, shape=self.shape, requireGrad=False, sshape=sshape)
         else: self.grad = None
-        self.data = None
     @staticmethod
     def rand(shape: tuple, sshape: bool = False) -> Tensor: return Tensor(data=np.random.randn(*shape), sshape=sshape)
     def __repr__(self) -> str: return f"<Tensor {self.shape} @ {self.id}>"
     def _fill(self, value: float) -> None: PROG.driver.fill(self, float(value))
     def dim(self) -> int: return len(self.shape)
-    def numpy(self) -> np.ndarray:
-        if self.data is None: self.data = np.zeros(self.shape, dtype=np.float32)
-        PROG.driver.numpy(self.id, self.data) 
-        return self.data
+    def numpy(self) -> np.ndarray: return PROG.driver.numpy(self.id, self.shape)
     def sum(self) -> Tensor:
         PROG.f(Sum(self, t := Tensor(None, tuple(list(self.shape[:-1])+[1]))))
         PROG.ba([AddT(t.grad, self.grad)])
@@ -106,15 +103,17 @@ class Tensor:
         PROG.f(Dot(self, rhs, t := Tensor(None, targetShape)))
         shape = rhs.shape
         tmp = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]), requireGrad=False)
+        tmp1 = Tensor(None, shape=self.shape, requireGrad=False)
         shape = self.shape
         tmp2 = Tensor(None, shape=shape[:-2] + (shape[-1], shape[-2]), requireGrad=False)
+        tmp3 = Tensor(None, shape=rhs.shape, requireGrad=False)
         PROG.ba([
             Trans(rhs, tmp),
-            Dot(t.grad, tmp, tmp),
-            Add(self.grad, tmp, self.grad),
+            Dot(t.grad, tmp, tmp1),
+            Add(self.grad, tmp1, self.grad),
             Trans(self, tmp2),
-            Dot(tmp2, t.grad, tmp2),
-            Add(rhs.grad, tmp2, rhs.grad),
+            Dot(tmp2, t.grad, tmp3),
+            Add(rhs.grad, tmp3, rhs.grad),
         ])
         return t
     def __pow__(self, rhs: Union[float, int]) -> Tensor:

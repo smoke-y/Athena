@@ -35,7 +35,7 @@ __global__ void dotKernel(const float *a, const float *b, float *c, const unsign
 EXPORT void dot(const float *a, const float *b, float *c, const unsigned int X1, const unsigned int X2, const unsigned int Y1){
     dim3 block(THREADS, THREADS);
     dim3 grid((max(X1,X2)+THREADS+1)/THREADS, (max(Y1,X1)+THREADS+1)/THREADS);
-    dotKernel<<<grid, block>>>(a,b,c,X1,X2,Y1);
+    dotKernel_slow<<<grid, block>>>(a,b,c,X1,X2,Y1);
 }
 
 #if(TEST)

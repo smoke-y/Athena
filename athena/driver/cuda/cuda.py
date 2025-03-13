@@ -35,11 +35,13 @@ class CudaDriver(Singleton, Driver):
         self._mem.append(dst)
         self.dll.fill(ctypes.c_int64(dst), count, ctypes.c_float(value))
         return dst
-    def numpy(self, id: int, out: np.ndarray) -> None:
+    def numpy(self, id: int, shape: tuple) -> np.ndarray:
+        out = np.zeros(shape, dtype=np.float32)
         self.dll.numpy(
             out.ctypes.data_as(ctypes.POINTER(ctypes.c_float)),
             ctypes.c_int64(self._mem[id]),
             out.size)
+        return out
     def load(self, id, data: np.ndarray) -> None:
         self.dll.load(
             ctypes.c_int64(self._mem[id]),
@@ -74,7 +76,7 @@ class CudaDriver(Singleton, Driver):
             ctypes.c_int64(self._mem[lhs.id]),
             ctypes.c_int64(self._mem[rhs.id]),
             ctypes.c_int64(self._mem[out.id]),
-            lhs.shape[-2], rhs.shape[-1], lhs.shape[-1])
+            lhs.shape[-1], rhs.shape[-1], lhs.shape[-2])
     def adds(self, src, scalar, out) -> None:
         self.dll.adds(
             ctypes.c_int64(self._mem[src.id]),
