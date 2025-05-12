@@ -2,7 +2,7 @@ from ..driver import *
 import numpy as np
 import ctypes
 
-class CudaDriver(Singleton, Driver):
+class CudaDriver(Driver):
     def __init__(self) -> None:
         super().__init__()
         self.chunkSize = 4096
