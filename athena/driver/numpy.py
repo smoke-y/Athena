@@ -39,7 +39,7 @@ class NumpyDriver(Driver):
             x += 1
             res.append((kernel * chunk).sum())
         self._mem[out.id] = np.array(res)
-    def conv1dback(self, srcT, kernelT, outgradT) -> None:
+    def conv1dback(self, srcT, srcGradT, kernelT, kernelGradT, outgradT) -> None:
         kernel = self._mem[kernelT.id]
         src = self._mem[srcT.id]
         outgrad = self._mem[outgradT.id]
@@ -47,7 +47,15 @@ class NumpyDriver(Driver):
         res = []
         for i in range(len(kernel)):
             res.append((outgrad * src[i:i+outsize]).sum())
-        self._mem[outgradT.id] = np.array(res)
+        self._mem[kernelGradT.id] = self._mem[kernelGradT.id].astype(np.float64) + np.array(res)
+        res = []
+        srcLen = len(src)
+        for i in range(srcLen):
+            tot = 0
+            for j in range(i, i-len(kernel), -1):
+                if j >= 0 and j < len(outgrad): tot += outgrad[j] * kernel[i-j]
+            res.append(tot)
+        self._mem[srcGradT.id] = self._mem[srcGradT.id].astype(np.float64) + np.array(res)
     def conv2d(self, src, kernel, out) -> None:
         kernel = self._mem[kernel.id]
         src = self._mem[src.id]
@@ -60,7 +68,7 @@ class NumpyDriver(Driver):
             for j in range(outW):
                 output[i, j] = (kernel * src[i:i+kernelLen[0], j:j+kernelLen[1]]).sum()
         self._mem[out.id] = output
-    def conv2dback(self, srcT, kernelT, outgradT) -> None:
+    def conv2dback(self, srcT, kernelT, kernelGradT, outgradT) -> None:
         kernel = self._mem[kernelT.id]
         src = self._mem[srcT.id]
         outgrad = self._mem[outgradT.id]
@@ -69,5 +77,5 @@ class NumpyDriver(Driver):
         for i in range(kernelLen[0]):
             for j in range(kernelLen[1]):
                 out[i, j] = (src[i:i+kernelLen[0], j:j+kernelLen[1]] * outgrad[i, j]).sum()
-        self._mem[outgradT.id] = out
+        self._mem[kernelGradT.id] = self._mem[kernelGradT.id].astype(np.float64) + out
     def passComplete(self) -> None: self._mem = self._mem[:self.sshapeLen]

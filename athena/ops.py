@@ -62,8 +62,8 @@ class Fill(UnOp):
 class Conv1D(BinOp):
     def forward(self) -> None: PROG.driver.conv1D(self.lhs, self.rhs, self.out)
 class Conv1DBack(BinOp):
-    def forward(self) -> None: PROG.driver.conv1dback(self.lhs, self.rhs, self.out)
+    def forward(self) -> None: PROG.driver.conv1dback(self.lhs, self.lhs.grad, self.rhs, self.rhs.grad, self.out)
 class Conv2D(BinOp):
     def forward(self) -> None: PROG.driver.conv2d(self.lhs, self.rhs, self.out)
 class Conv2dBack(BinOp):
-    def forward(self) -> None: PROG.driver.conv2dback(self.lhs, self.rhs, self.out)
+    def forward(self) -> None: PROG.driver.conv2dback(self.lhs, self.rhs, self.rhs.grad, self.out)
