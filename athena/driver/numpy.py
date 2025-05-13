@@ -68,7 +68,7 @@ class NumpyDriver(Driver):
             for j in range(outW):
                 output[i, j] = (kernel * src[i:i+kernelLen[0], j:j+kernelLen[1]]).sum()
         self._mem[out.id] = output
-    def conv2dback(self, srcT, kernelT, kernelGradT, outgradT) -> None:
+    def conv2dback(self, srcT, srcGradT, kernelT, kernelGradT, outgradT) -> None:
         kernel = self._mem[kernelT.id]
         src = self._mem[srcT.id]
         outgrad = self._mem[outgradT.id]
@@ -78,4 +78,15 @@ class NumpyDriver(Driver):
             for j in range(kernelLen[1]):
                 out[i, j] = (src[i:i+kernelLen[0], j:j+kernelLen[1]] * outgrad[i, j]).sum()
         self._mem[kernelGradT.id] = self._mem[kernelGradT.id].astype(np.float64) + out
+        srcLen = src.shape
+        src_grad = np.zeros(srcLen)
+        pad_h = kernelLen[0] - 1
+        pad_w = kernelLen[1] - 1
+        padded_outgrad = np.pad(outgrad, ((pad_h, pad_h), (pad_w, pad_w)), 'constant')
+        for i in range(srcLen[0]):
+            for j in range(srcLen[1]):
+                region = padded_outgrad[i:i+kernelLen[0], j:j+kernelLen[1]]
+                print(region)
+                src_grad[i, j] = (region * kernel[::-1, ::-1]).sum()
+        self._mem[srcGradT.id] = self._mem[srcGradT.id].astype(np.float64) + src_grad
     def passComplete(self) -> None: self._mem = self._mem[:self.sshapeLen]
